@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AB LITER DICTATOR PRO | V4 OFFICIAL</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg: #050709; --card: #111418; --green: #00ff88; --red: #e11d48; --gold: #ffd700; --blue: #2196f3; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
+        .app-container { width: 100%; max-width: 400px; padding: 15px; min-height: 100vh; background: #000; }
+
+        /* Login Screen */
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .login-card { background: var(--card); padding: 25px; border-radius: 25px; border: 1px solid #333; width: 100%; max-width: 340px; text-align: center; margin: auto; }
+        
+        .btn-demo { background: none; border: 1px solid var(--green); color: var(--green); margin-top: 10px; padding: 12px; border-radius: 12px; width: 100%; cursor: pointer; font-weight: bold; font-size: 14px; }
+
+        /* WhatsApp Price Buttons */
+        .price-list { margin-top: 20px; border-top: 1px solid #222; padding-top: 15px; }
+        .wa-price-btn { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; color: white; text-decoration: none; padding: 12px 15px; border-radius: 12px; font-size: 13px; margin-bottom: 8px; border: 1px solid #333; transition: 0.3s; }
+        
+        /* Payment Modal */
+        #payment-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .payment-card { background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); text-align: center; width: 100%; max-width: 300px; }
+        .copy-btn { background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
+
+        /* Main App Area */
+        #main-app { display: none; width: 100%; }
+        .logo-text { color: var(--red); font-weight: bold; font-style: italic; font-size: 24px; text-shadow: 0 0 10px rgba(225, 29, 72, 0.5); }
+
+        .game-window { background: radial-gradient(circle, #1a1a1a 0%, #000 100%); height: 220px; border-radius: 25px; position: relative; overflow: hidden; border: 1px solid #222; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 15px 0; }
+        #plane { position: absolute; bottom: 20px; left: -100px; width: 75px; z-index: 2; transition: all 0.5s ease-in-out; }
+        .multiplier-text { font-size: 60px; font-weight: 900; z-index: 5; }
+        .fly { animation: takeOff 2s infinite alternate ease-in-out; left: 45% !important; bottom: 45% !important; }
+        @keyframes takeOff { 0% { transform: translate(-5px, 0px); } 100% { transform: translate(5px, -15px); } }
+
+        .main-input { width: 100%; padding: 16px; background: #000; border: 1px solid #333; color: white; border-radius: 12px; text-align: center; font-size: 20px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+        .btn-predict { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: bold; font-size: 20px; background: linear-gradient(to right, #2ecc71, #27ae60); color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="payment-modal">
+    <div class="payment-card">
+        <h3 style="color:var(--gold); margin-top:0;">PAYMENT METHOD</h3>
+        <p style="font-size:12px; color:#aaa;">پیسے بھیجنے کے بعد واٹس ایپ پر اسکرین شاٹ لازمی بھیجیں</p>
+        
+        <div style="background:#000; padding:15px; border-radius:12px; margin:15px 0; border: 1px solid #222;">
+            <p style="margin:0; font-size:14px; color:var(--green); font-weight:bold;">EasyPaisa</p>
+            <h2 id="acc-num" style="margin:10px 0; letter-spacing:2px; color:white;">03461785207</h2>
+            <p style="margin:0; font-size:13px; color:#ccc;">Name: <span id="acc-name">Ghulam Hussain</span></p>
+            <button class="copy-btn" onclick="copyNumber()"><i class="fas fa-copy"></i> COPY NUMBER</button>
+        </div>
+        
+        <button onclick="goToWhatsApp()" style="background:var(--green); color:black; border:none; padding:12px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer;">I HAVE PAID (WHATSAPP)</button>
+    </div>
+</div>
+
+<div id="login-screen">
+    <div class="login-card">
+        <h1 class="logo-text">AB LITER PRO</h1>
+        <p style="color:#888; font-size:11px; margin-bottom: 20px;">VIP PREDICTOR V4</p>
+        
+        <input type="text" id="user-key" class="main-input" placeholder="ENTER VIP KEY">
+        <button class="btn-predict" onclick="verifyKey()">LOGIN ACCESS</button>
+        
+        <button class="btn-demo" onclick="startDemo()">TRY FREE DEMO (3 SIGNALS)</button>
+
+        <div class="price-list">
+            <p style="font-size: 11px; color: #666; margin-bottom: 10px;">PURCHASE VIP VIA EASYPAISA</p>
+            
+            <a href="#" class="wa-price-btn wa-btn" data-msg="300 PKR Trial">
+                <span>Trial (24 Hours)</span>
+                <b style="color:var(--green)">300 PKR</b>
+            </a>
+            
+            <a href="#" class="wa-price-btn wa-btn" data-msg="700 PKR Weekly">
+                <span>Weekly VIP</span>
+                <b style="color:var(--green)">700 PKR</b>
+            </a>
+            
+            <a href="#" class="wa-price-btn wa-btn" style="border-color:var(--gold)" data-msg="5000 PKR Lifetime">
+                <span style="color:var(--gold)">Lifetime VIP</span>
+                <b style="color:var(--gold)">5000 PKR</b>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="main-app" class="app-container">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="logo-text" style="font-size:20px;">AB LITER</div>
+        <div id="demo-tag" style="color:var(--gold); font-size:10px; display:none;">DEMO MODE</div>
+    </div>
+
+    <div class="game-window">
+        <img src="https://i.ibb.co/v4m0f5h/plane.png" id="plane" alt="plane">
+        <div class="multiplier-text" id="m-val">READY</div>
+    </div>
+
+    <div class="control-panel" style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #222;">
+        <input type="number" id="prev-input" class="main-input" placeholder="LAST RESULT">
+        <button class="btn-predict" onclick="runPrediction()">GENERATE SIGNAL</button>
+    </div>
+    
+    <p id="signal-count" style="text-align:center; font-size:12px; color:#555; margin-top:15px;"></p>
+</div>
+
+<script>
+    const firebaseConfig = { databaseURL: "https://ab-liter-server-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let isDemo = false;
+    let demoCount = 0;
+    let currentWaLink = "";
+    const deviceSignature = navigator.userAgent.substring(0, 40) + window.screen.width;
+
+    // Payment Popup Logic
+    document.querySelectorAll('.wa-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            currentWaLink = this.href;
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+    });
+
+    function copyNumber() {
+        const num = document.getElementById('acc-num').innerText;
+        navigator.clipboard.writeText(num);
+        alert("نمبر کاپی ہو گیا! اب پیمنٹ کریں اور اسکرین شاٹ بھیجیں۔");
+    }
+
+    function goToWhatsApp() {
+        window.location.href = currentWaLink;
+    }
+
+    function startDemo() {
+        isDemo = true; demoCount = 0;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('demo-tag').style.display = 'block';
+        document.getElementById('signal-count').innerText = "Demo Status: 0/3";
+    }
+
+    function verifyKey() {
+        const key = document.getElementById('user-key').value.trim();
+        if(!key) return alert("Enter Key!");
+        db.ref('keys/' + key).once('value', (snap) => {
+            if(snap.exists()) {
+                const data = snap.val();
+                if(data.deviceId === "Not Bound" || data.deviceId === deviceSignature) {
+                    db.ref('keys/' + key).update({ deviceId: deviceSignature });
+                    isDemo = false;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                } else { alert("Key locked to another device!"); }
+            } else { alert("Invalid Key!"); }
+        });
+    }
+
+    function runPrediction() {
+        if(isDemo && demoCount >= 3) {
+            alert("فری ڈیمو ختم! VIP کی خریدیں۔");
+            location.reload(); return;
+        }
+        const prev = document.getElementById('prev-input').value;
+        if(!prev) return alert("Enter last result!");
+
+        const plane = document.getElementById('plane');
+        const mVal = document.getElementById('m-val');
+        plane.classList.remove('fly');
+        mVal.innerText = "ANALYZING";
+
+        setTimeout(() => {
+            plane.classList.add('fly');
+            let res = (Math.random() * (3.5 - 1.2) + 1.2).toFixed(2);
+            mVal.innerText = res + "x";
+            mVal.style.color = res > 2 ? "#9c27b0" : "#2196f3";
+            if(isDemo) {
+                demoCount++;
+                document.getElementById('signal-count').innerText = "Demo Status: " + demoCount + "/3";
+            }
+        }, 1500);
+    }
+
+    db.ref('settings/whatsapp').on('value', (s) => {
+        const num = s.val();
+        if(num) {
+            document.querySelectorAll('.wa-btn').forEach(btn => {
+                const msg = btn.getAttribute('data-msg');
+                btn.href = `https://wa.me/${num}?text=I%20have%20sent%20money%20for%20${msg}%20Package.`;
+            });
+        }
+    });
+</script>
+</body>
+</html>
